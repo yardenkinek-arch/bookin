@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   Family Library — design tokens
+   Warm "reading-room" palette: paper backgrounds, ink text,
+   terracotta primary, sage secondary. Light + dark.
+   ========================================================================== */
+:root {
+  --paper:        #faf6ef;   /* app background */
+  --surface:      #ffffff;   /* cards */
+  --surface-2:    #f4ede1;   /* subtle panels */
+  --ink:          #2b2622;   /* primary text */
+  --ink-soft:     #6b6157;   /* secondary text */
+  --line:         #e7ddcd;   /* borders */
+
+  --primary:      #b8543a;   /* terracotta */
+  --primary-600:  #9e4530;
+  --primary-soft: #f5e2da;
+  --secondary:    #4f7a6f;   /* sage */
+  --secondary-soft:#e2ede9;
+
+  --amber:        #d99a2b;   /* stars / highlights */
+  --danger:       #c0392b;
+  --warn:         #d99a2b;
+  --success:      #4f7a6f;
+
+  --radius: 0.9rem;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-primary: var(--primary);
+  --color-primary-600: var(--primary-600);
+  --color-primary-soft: var(--primary-soft);
+  --color-secondary: var(--secondary);
+  --color-secondary-soft: var(--secondary-soft);
+  --color-amber: var(--amber);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --font-sans: var(--font-heebo), system-ui, sans-serif;
+  --radius-xl: var(--radius);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper:        #1a1714;
+    --surface:      #241f1b;
+    --surface-2:    #2e2823;
+    --ink:          #f0e9df;
+    --ink-soft:     #b3a89b;
+    --line:         #3a332c;
+    --primary:      #d9765b;
+    --primary-600:  #c25f45;
+    --primary-soft: #3a2620;
+    --secondary:    #7aa89b;
+    --secondary-soft:#26332e;
+    --amber:        #e0ab45;
+  }
+}
+
+* {
+  border-color: var(--line);
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+/* Utility: thin card */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
