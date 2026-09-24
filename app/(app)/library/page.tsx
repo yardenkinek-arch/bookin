@@ -49,12 +49,20 @@ export default async function LibraryPage({
         subtitle={`${books.length} ספרים`}
         action={
           profile.role === "admin" ? (
-            <Link
-              href="/books/new"
-              className="rounded-lg bg-primary hover:bg-primary-600 text-white text-sm font-semibold px-4 py-2 transition"
-            >
-              + הוספת ספר
-            </Link>
+            <div className="flex gap-2">
+              <Link
+                href="/import"
+                className="rounded-lg bg-secondary hover:opacity-90 text-white text-sm font-semibold px-4 py-2 transition"
+              >
+                📷 מצילום
+              </Link>
+              <Link
+                href="/books/new"
+                className="rounded-lg bg-primary hover:bg-primary-600 text-white text-sm font-semibold px-4 py-2 transition"
+              >
+                + הוספת ספר
+              </Link>
+            </div>
           ) : undefined
         }
       />

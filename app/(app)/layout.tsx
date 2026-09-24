@@ -14,6 +14,7 @@ const memberNav: NavItem[] = [
 const adminNav: NavItem[] = [
   { href: "/dashboard", label: "לוח בקרה", icon: "📊" },
   { href: "/library", label: "ספרייה", icon: "📚" },
+  { href: "/import", label: "מצילום", icon: "📷" },
   { href: "/search", label: "חיפוש", icon: "🔍" },
   { href: "/series", label: "סדרות", icon: "📖" },
   { href: "/shopping", label: "קניות", icon: "🛒" },
