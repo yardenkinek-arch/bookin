@@ -112,7 +112,7 @@ export async function getLibraryBooks(
       query = query.order("title", { ascending: true });
   }
 
-  const { data, error } = await query.limit(500);
+  const { data, error } = await query.limit(2000);
   if (error) throw error;
 
   let books = await decorateWithPersonal(
