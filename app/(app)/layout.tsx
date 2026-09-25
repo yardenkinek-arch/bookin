@@ -1,6 +1,11 @@
 import { requireProfile } from "@/lib/auth";
 import { Nav, type NavItem } from "@/components/nav";
 
+// Always render app pages fresh — book data changes often (imports, cover/metadata
+// updates) and family members expect to see changes immediately, not a cached view.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const memberNav: NavItem[] = [
   { href: "/library", label: "ספרייה", icon: "📚" },
   { href: "/search", label: "חיפוש", icon: "🔍" },
