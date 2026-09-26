@@ -8,7 +8,7 @@ import type {
 export interface BookListItem extends Book {
   authors: { id: string; name: string }[];
   series: Pick<Series, "id" | "name" | "total_books"> | null;
-  genre: string | null;
+  genres: string[];
   myStatus: ReadingStatus | null;
   myRating: number | null;
   isFavorite: boolean;
@@ -77,7 +77,9 @@ async function decorateWithPersonal(
       .sort((a, z) => a.position - z.position)
       .map((ba) => ba.author),
     series: b.series,
-    genre: b.book_genres?.[0]?.genre?.name ?? null,
+    genres: (b.book_genres ?? [])
+      .map((bg) => bg.genre?.name)
+      .filter((n): n is string => !!n),
     myStatus: statusMap.get(b.id) ?? null,
     myRating: ratingMap.get(b.id) ?? null,
     isFavorite: favSet.has(b.id),

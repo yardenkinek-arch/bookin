@@ -117,21 +117,40 @@ export function EditBookForm({
       <Field label="שם בשפת המקור" value={form.title_original ?? ""} onChange={set("title_original")} />
       <Field label="סופר/ים (מופרד בפסיקים)" value={form.authors ?? ""} onChange={set("authors")} />
 
-      <label className="block">
-        <span className="block text-sm font-medium text-ink-soft mb-1.5">ז'אנר</span>
-        <select
-          value={form.genre_id ?? ""}
-          onChange={(e) => setForm((f) => ({ ...f, genre_id: e.target.value }))}
-          className="w-full rounded-lg border border-line bg-surface px-3 py-2.5 text-ink outline-none focus:border-primary"
-        >
-          <option value="">— ללא ז'אנר —</option>
-          {genres.map((g) => (
-            <option key={g.id} value={g.id}>
-              {g.name}
-            </option>
-          ))}
-        </select>
-      </label>
+      <div>
+        <span className="block text-sm font-medium text-ink-soft mb-2">
+          ז'אנרים <span className="text-ink-soft/70">(אפשר לבחור כמה)</span>
+        </span>
+        <div className="flex flex-wrap gap-2">
+          {genres.map((g) => {
+            const selected = (form.genre_ids ?? []).includes(g.id);
+            return (
+              <button
+                key={g.id}
+                type="button"
+                onClick={() =>
+                  setForm((f) => {
+                    const cur = f.genre_ids ?? [];
+                    return {
+                      ...f,
+                      genre_ids: selected
+                        ? cur.filter((x) => x !== g.id)
+                        : [...cur, g.id],
+                    };
+                  })
+                }
+                className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
+                  selected
+                    ? "bg-primary text-white"
+                    : "bg-surface border border-line text-ink-soft hover:text-ink"
+                }`}
+              >
+                {g.name}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       <div className="grid grid-cols-2 gap-3">
         <Field label="שם הסדרה" value={form.series_name ?? ""} onChange={set("series_name")} />

@@ -18,7 +18,7 @@ export interface EditBookInput {
   isbn_10?: string;
   description?: string;
   cover_url?: string;
-  genre_id?: string; // single genre; "" clears
+  genre_ids?: string[]; // one or more genres; [] clears
 }
 
 async function upsertAuthor(
@@ -94,12 +94,14 @@ export async function updateBookDetails(
     if (aid) await supabase.from("book_authors").insert({ book_id: id, author_id: aid, position: i });
   }
 
-  // Genre (single): replace the book's genres with the chosen one.
-  if (input.genre_id !== undefined) {
+  // Genres (multiple): replace the book's genres with the chosen set.
+  if (input.genre_ids !== undefined) {
     await supabase.from("book_genres").delete().eq("book_id", id);
-    if (input.genre_id) {
-      await supabase.from("book_genres").insert({ book_id: id, genre_id: input.genre_id });
-    }
+    const rows = [...new Set(input.genre_ids.filter(Boolean))].map((gid) => ({
+      book_id: id,
+      genre_id: gid,
+    }));
+    if (rows.length) await supabase.from("book_genres").insert(rows);
   }
 
   await supabase.from("audit_logs").insert({

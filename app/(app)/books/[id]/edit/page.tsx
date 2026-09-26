@@ -38,7 +38,7 @@ export default async function EditBookPage({
     isbn_10: book.isbn_10 ?? "",
     description: book.description ?? "",
     cover_url: book.cover_url ?? "",
-    genre_id: genres[0]?.id ?? "",
+    genre_ids: genres.map((g) => g.id),
   };
 
   return (
