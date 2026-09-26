@@ -193,10 +193,12 @@ export async function getBookDetail(bookId: string, userId: string) {
 
   const genres =
     (
-      data as unknown as RawBook & {
-        book_genres?: { genre: { id: string; name: string } }[];
+      data as unknown as {
+        book_genres?: { genre: { id: string; name: string } | null }[];
       }
-    ).book_genres?.map((g) => g.genre) ?? [];
+    ).book_genres
+      ?.map((g) => g.genre)
+      .filter((g): g is { id: string; name: string } => g != null) ?? [];
 
   return {
     book: decorated,
