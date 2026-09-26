@@ -45,22 +45,14 @@ async function decorateWithPersonal(
   const ids = rawBooks.map((b) => b.id);
   if (ids.length === 0) return [];
 
+  // Fetch the user's OWN status/rating/favorite rows (few per user) and map them.
+  // NOTE: do NOT filter by `.in("book_id", ids)` — with a large library that puts
+  // hundreds of ids in the URL and the request fails (Bad Request), silently
+  // wiping every personal marker. A user has few of these rows, so fetch them all.
   const [statuses, ratings, favorites] = await Promise.all([
-    supabase
-      .from("user_book_status")
-      .select("book_id, status")
-      .eq("user_id", userId)
-      .in("book_id", ids),
-    supabase
-      .from("user_book_ratings")
-      .select("book_id, rating")
-      .eq("user_id", userId)
-      .in("book_id", ids),
-    supabase
-      .from("favorites")
-      .select("book_id")
-      .eq("user_id", userId)
-      .in("book_id", ids),
+    supabase.from("user_book_status").select("book_id, status").eq("user_id", userId),
+    supabase.from("user_book_ratings").select("book_id, rating").eq("user_id", userId),
+    supabase.from("favorites").select("book_id").eq("user_id", userId),
   ]);
 
   const statusMap = new Map(
