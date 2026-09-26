@@ -1,9 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/types/database";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
-/** Returns the signed-in user's profile, or null. */
-export async function getProfile(): Promise<Profile | null> {
+/**
+ * Returns the signed-in user's profile, or null.
+ * Wrapped in React cache() so the layout + page (same request) share a single
+ * auth check + profile fetch instead of hitting Supabase twice per render.
+ */
+export const getProfile = cache(async (): Promise<Profile | null> => {
   const supabase = await createClient();
   const {
     data: { user },
@@ -16,7 +21,7 @@ export async function getProfile(): Promise<Profile | null> {
     .eq("id", user.id)
     .single();
   return data ?? null;
-}
+});
 
 /** Like getProfile but redirects to /login when signed out. */
 export async function requireProfile(): Promise<Profile> {

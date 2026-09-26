@@ -13,9 +13,17 @@ export interface BookListItem extends Book {
   isFavorite: boolean;
 }
 
-/** Base select with authors + series joined. */
+/** Base select with authors + series joined (full row — used for detail). */
 const BOOK_SELECT = `
   *,
+  book_authors ( position, author:authors ( id, name ) ),
+  series:series ( id, name, total_books )
+`;
+
+/** Lean select for list/grid views — only the columns cards actually use.
+ *  Selecting these instead of `*` cuts the payload a lot across ~750 rows. */
+const LIST_SELECT = `
+  id, title, cover_url, series_id, series_position, published_year, created_at, verified_at,
   book_authors ( position, author:authors ( id, name ) ),
   series:series ( id, name, total_books )
 `;
@@ -91,7 +99,7 @@ export async function getLibraryBooks(
   const supabase = await createClient();
   let query = supabase
     .from("books")
-    .select(BOOK_SELECT)
+    .select(LIST_SELECT)
     .is("deleted_at", null);
 
   if (filters.search) {
