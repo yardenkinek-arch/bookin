@@ -30,13 +30,22 @@ export function CardVerifyButton({
       disabled={pending}
       title={verified ? "אומת — לחצי לביטול" : "סמני כמאומת"}
       aria-label={verified ? "בטלי אימות" : "סמני כמאומת"}
-      className={`absolute top-1.5 left-1.5 z-10 flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold shadow transition disabled:opacity-60 ${
+      style={
         verified
-          ? "bg-primary text-white"
-          : "bg-black/45 text-white/90 hover:bg-black/65 backdrop-blur"
+          ? {
+              backgroundColor: "#39ff14",
+              color: "#08130a",
+              boxShadow: "0 0 10px 2px rgba(57,255,20,0.9)",
+            }
+          : undefined
+      }
+      className={`absolute top-1.5 left-1.5 z-10 flex h-7 w-7 items-center justify-center rounded-full text-base font-black leading-none shadow transition disabled:opacity-60 ${
+        verified
+          ? "ring-2 ring-white/70"
+          : "bg-black/55 text-white/95 hover:bg-black/75 backdrop-blur"
       }`}
     >
-      ✓
+      {verified ? "✓" : "−"}
     </button>
   );
 }

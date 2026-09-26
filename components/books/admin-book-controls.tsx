@@ -36,13 +36,22 @@ export function AdminBookControls({
         <button
           onClick={toggle}
           disabled={pending}
-          className={`rounded-lg text-sm font-semibold px-4 py-2 transition disabled:opacity-60 ${
+          style={
             verified
-              ? "bg-primary-soft text-primary border border-primary"
+              ? {
+                  backgroundColor: "#39ff14",
+                  color: "#08130a",
+                  boxShadow: "0 0 12px 2px rgba(57,255,20,0.85)",
+                }
+              : undefined
+          }
+          className={`rounded-lg text-sm font-bold px-4 py-2 transition disabled:opacity-60 ${
+            verified
+              ? "border border-[#2bd60f]"
               : "bg-surface border border-line text-ink-soft hover:text-ink"
           }`}
         >
-          {verified ? "✓ עברתי ואימתתי" : "סמני כמאומת"}
+          {verified ? "✓ עברתי ואימתתי" : "− סמני כמאומת"}
         </button>
       </div>
       {verified && (
