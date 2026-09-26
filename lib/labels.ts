@@ -16,12 +16,13 @@ export const READING_STATUS_ICON: Record<ReadingStatus, string> = {
   reread: "🔁",
 };
 
+// Note: "reread" is intentionally omitted so it's no longer offered as an option.
+// Its label/icon are kept above so any pre-existing "reread" data still renders.
 export const READING_STATUS_ORDER: ReadingStatus[] = [
   "unread",
   "want_to_read",
   "reading",
   "read",
-  "reread",
 ];
 
 export const REVIEW_STATUS_LABELS: Record<ReviewStatus, string> = {
