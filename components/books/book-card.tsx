@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { Cover } from "./cover";
+import { CardVerifyButton } from "./card-verify-button";
 import { READING_STATUS_ICON, READING_STATUS_LABELS } from "@/lib/labels";
 import type { BookListItem } from "@/lib/queries";
 
-export function BookCard({ book }: { book: BookListItem }) {
+export function BookCard({ book, isAdmin = false }: { book: BookListItem; isAdmin?: boolean }) {
   const authorNames = book.authors.map((a) => a.name).join(", ");
   return (
     <Link
@@ -15,13 +16,17 @@ export function BookCard({ book }: { book: BookListItem }) {
         {book.isFavorite && (
           <span className="absolute top-1.5 right-1.5 text-sm drop-shadow">❤️</span>
         )}
-        {book.verified_at && (
-          <span
-            title="אומת"
-            className="absolute top-1.5 left-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white text-[11px] font-bold drop-shadow"
-          >
-            ✓
-          </span>
+        {isAdmin ? (
+          <CardVerifyButton bookId={book.id} verifiedAt={book.verified_at} />
+        ) : (
+          book.verified_at && (
+            <span
+              title="אומת"
+              className="absolute top-1.5 left-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white text-[11px] font-bold drop-shadow"
+            >
+              ✓
+            </span>
+          )
         )}
         {book.myStatus && book.myStatus !== "unread" && (
           <span className="absolute bottom-1.5 left-1.5 rounded-full bg-black/60 text-white text-[10px] px-2 py-0.5 backdrop-blur">

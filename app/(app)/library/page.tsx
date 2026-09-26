@@ -115,7 +115,7 @@ export default async function LibraryPage({
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
           {books.map((b) => (
-            <BookCard key={b.id} book={b} />
+            <BookCard key={b.id} book={b} isAdmin={profile.role === "admin"} />
           ))}
         </div>
       )}
