@@ -95,6 +95,9 @@ export type Book = {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+  // Admin verification: set when the admin has reviewed the record for correctness.
+  verified_at: string | null;
+  verified_by: string | null;
 }
 
 export type UserBookStatus = {

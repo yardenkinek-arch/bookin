@@ -79,6 +79,7 @@ export interface LibraryFilters {
   authorId?: string;
   status?: ReadingStatus;
   favoritesOnly?: boolean;
+  verified?: "yes" | "no";
   sort?: "title" | "recent" | "year" | "rating";
 }
 
@@ -130,6 +131,8 @@ export async function getLibraryBooks(
   if (filters.favoritesOnly) {
     books = books.filter((b) => b.isFavorite);
   }
+  if (filters.verified === "yes") books = books.filter((b) => !!b.verified_at);
+  if (filters.verified === "no") books = books.filter((b) => !b.verified_at);
   return books;
 }
 

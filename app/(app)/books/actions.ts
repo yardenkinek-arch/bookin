@@ -1,10 +1,25 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { requireProfile } from "@/lib/auth";
+import { requireProfile, requireAdmin } from "@/lib/auth";
 import { notifyAdmins } from "@/lib/notify";
 import { revalidatePath } from "next/cache";
 import type { ReadingStatus, ShoppingPriority } from "@/types/database";
+
+// --- Admin: mark a book as reviewed/verified --------------------------------
+export async function setBookVerified(bookId: string, verified: boolean) {
+  const admin = await requireAdmin();
+  const supabase = await createClient();
+  await supabase
+    .from("books")
+    .update({
+      verified_at: verified ? new Date().toISOString() : null,
+      verified_by: verified ? admin.id : null,
+    })
+    .eq("id", bookId);
+  revalidatePath(`/books/${bookId}`);
+  revalidatePath("/library");
+}
 
 // --- Personal reading status -------------------------------------------------
 export async function setReadingStatus(bookId: string, status: ReadingStatus) {

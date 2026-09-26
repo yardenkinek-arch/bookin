@@ -9,7 +9,7 @@ import type { ReadingStatus } from "@/types/database";
 export default async function LibraryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string; sort?: string }>;
+  searchParams: Promise<{ q?: string; status?: string; sort?: string; verified?: string }>;
 }) {
   const profile = await requireProfile();
   const sp = await searchParams;
@@ -17,6 +17,7 @@ export default async function LibraryPage({
   const filters: LibraryFilters = {
     search: sp.q,
     status: (sp.status as ReadingStatus) || undefined,
+    verified: sp.verified === "yes" || sp.verified === "no" ? sp.verified : undefined,
     sort: (sp.sort as LibraryFilters["sort"]) || "title",
   };
   const books = await getLibraryBooks(profile.id, filters);
@@ -35,9 +36,14 @@ export default async function LibraryPage({
   );
 
   const base = (extra: Record<string, string | undefined>) => {
+    const current: Record<string, string | undefined> = {
+      q: sp.q,
+      status: sp.status,
+      verified: sp.verified,
+    };
+    const merged = { ...current, ...extra };
     const params = new URLSearchParams();
-    if (sp.q) params.set("q", sp.q);
-    for (const [k, v] of Object.entries(extra)) if (v) params.set(k, v);
+    for (const [k, v] of Object.entries(merged)) if (v) params.set(k, v);
     const s = params.toString();
     return `/library${s ? `?${s}` : ""}`;
   };
@@ -85,6 +91,15 @@ export default async function LibraryPage({
           chip(base({ status: s }), READING_STATUS_LABELS[s], sp.status === s),
         )}
       </div>
+
+      {/* Admin: verification filter */}
+      {profile.role === "admin" && (
+        <div className="flex gap-2 overflow-x-auto pb-3 mb-2 -mx-1 px-1">
+          {chip(base({ verified: undefined }), "אימות: הכל", !sp.verified)}
+          {chip(base({ verified: "no" }), "טרם אומתו", sp.verified === "no")}
+          {chip(base({ verified: "yes" }), "אומתו ✓", sp.verified === "yes")}
+        </div>
+      )}
 
       {books.length === 0 ? (
         <EmptyState

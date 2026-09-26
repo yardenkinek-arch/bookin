@@ -10,6 +10,7 @@ import {
   NoteEditor,
 } from "@/components/books/personal-controls";
 import { ReviewFlagButton } from "@/components/books/review-flag";
+import { AdminBookControls } from "@/components/books/admin-book-controls";
 import { READING_STATUS_ICON } from "@/lib/labels";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -48,6 +49,11 @@ export default async function BookPage({
           <h1 className="text-xl md:text-2xl font-bold text-ink leading-tight">
             {book.title}
           </h1>
+          {profile.role === "admin" && book.verified_at && (
+            <span className="inline-flex items-center gap-1 mt-1 text-xs font-medium text-primary bg-primary-soft rounded-full px-2.5 py-0.5">
+              ✓ אומת
+            </span>
+          )}
           {book.title_original && book.title_original !== book.title && (
             <p className="text-ink-soft text-sm mt-0.5" dir="auto">
               {book.title_original}
@@ -165,6 +171,11 @@ export default async function BookPage({
       <div className="mt-6">
         <ReviewFlagButton bookId={book.id} />
       </div>
+
+      {/* Admin-only: edit + verify controls */}
+      {profile.role === "admin" && (
+        <AdminBookControls bookId={book.id} verifiedAt={book.verified_at} />
+      )}
 
       {/* Admin-only private review panel */}
       {profile.role === "admin" && <AdminReviewPanel bookId={book.id} />}
