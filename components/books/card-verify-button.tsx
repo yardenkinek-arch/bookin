@@ -39,7 +39,7 @@ export function CardVerifyButton({
             }
           : undefined
       }
-      className={`absolute top-1.5 left-1.5 z-10 flex h-7 w-7 items-center justify-center rounded-full text-base font-black leading-none shadow transition disabled:opacity-60 ${
+      className={`flex h-7 w-7 items-center justify-center rounded-full text-base font-black leading-none shadow transition disabled:opacity-60 ${
         verified
           ? "ring-2 ring-white/70"
           : "bg-black/55 text-white/95 hover:bg-black/75 backdrop-blur"

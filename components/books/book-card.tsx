@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Cover } from "./cover";
 import { CardVerifyButton } from "./card-verify-button";
+import { CardReadButton } from "./card-read-button";
 import { READING_STATUS_ICON, READING_STATUS_LABELS } from "@/lib/labels";
 import type { BookListItem } from "@/lib/queries";
 
@@ -16,23 +17,25 @@ export function BookCard({ book, isAdmin = false }: { book: BookListItem; isAdmi
         {book.isFavorite && (
           <span className="absolute top-1.5 right-1.5 text-sm drop-shadow">❤️</span>
         )}
-        {isAdmin ? (
-          <CardVerifyButton bookId={book.id} verifiedAt={book.verified_at} />
-        ) : (
-          book.verified_at && (
-            <span
-              title="אומת"
-              className="absolute top-1.5 left-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white text-[11px] font-bold drop-shadow"
-            >
-              ✓
+        {/* Top-left: personal read toggle (all users) + admin verify toggle */}
+        <div className="absolute top-1.5 left-1.5 z-10 flex flex-col gap-1">
+          <CardReadButton
+            bookId={book.id}
+            read={book.myStatus === "read" || book.myStatus === "reread"}
+          />
+          {isAdmin && (
+            <CardVerifyButton bookId={book.id} verifiedAt={book.verified_at} />
+          )}
+        </div>
+        {/* Bottom-left: other statuses (read is shown by the toggle above) */}
+        {book.myStatus &&
+          book.myStatus !== "unread" &&
+          book.myStatus !== "read" &&
+          book.myStatus !== "reread" && (
+            <span className="absolute bottom-1.5 left-1.5 rounded-full bg-black/60 text-white text-[10px] px-2 py-0.5 backdrop-blur">
+              {READING_STATUS_ICON[book.myStatus]} {READING_STATUS_LABELS[book.myStatus]}
             </span>
-          )
-        )}
-        {book.myStatus && book.myStatus !== "unread" && (
-          <span className="absolute bottom-1.5 left-1.5 rounded-full bg-black/60 text-white text-[10px] px-2 py-0.5 backdrop-blur">
-            {READING_STATUS_ICON[book.myStatus]} {READING_STATUS_LABELS[book.myStatus]}
-          </span>
-        )}
+          )}
         {book.genres.length > 0 && (
           <span className="absolute bottom-1.5 right-1.5 flex flex-col items-end gap-1">
             {book.genres.slice(0, 2).map((g) => (
