@@ -11,7 +11,6 @@ import {
 } from "@/components/books/personal-controls";
 import { ReviewFlagButton } from "@/components/books/review-flag";
 import { AdminBookControls } from "@/components/books/admin-book-controls";
-import { READING_STATUS_ICON } from "@/lib/labels";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { ReadingStatus } from "@/types/database";
@@ -97,31 +96,34 @@ export default async function BookPage({
         <StatusPicker bookId={book.id} current={book.myStatus} />
       </Section>
 
-      {/* Who read (family) */}
-      <Section title="מי במשפחה קרא?">
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {profiles.map((p) => {
-            const st = statusByUser.get(p.id);
-            const read = st === "read" || st === "reread";
-            const isMe = p.id === profile.id;
-            const known = isMe || profile.role === "admin";
-            return (
-              <div
-                key={p.id}
-                className="flex items-center gap-2 rounded-lg border border-line bg-surface px-3 py-2"
-              >
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-2 text-xs font-semibold text-ink-soft">
-                  {p.display_name.charAt(0)}
-                </span>
-                <span className="text-sm text-ink flex-1">{p.display_name}</span>
-                <span className="text-sm">
-                  {read ? "✅" : st ? READING_STATUS_ICON[st] : known ? "—" : "•"}
-                </span>
+      {/* Who read (family) — only people who actually read the book */}
+      {(() => {
+        const readers = profiles.filter((p) => {
+          const st = statusByUser.get(p.id);
+          return st === "read" || st === "reread";
+        });
+        return (
+          <Section title="מי קרא את הספר">
+            {readers.length === 0 ? (
+              <p className="text-sm text-ink-soft">עדיין אף אחד לא קרא את הספר.</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {readers.map((p) => (
+                  <span
+                    key={p.id}
+                    className="flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1.5"
+                  >
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-soft text-xs font-semibold text-primary">
+                      {p.display_name.charAt(0)}
+                    </span>
+                    <span className="text-sm text-ink">{p.display_name}</span>
+                  </span>
+                ))}
               </div>
-            );
-          })}
-        </div>
-      </Section>
+            )}
+          </Section>
+        );
+      })()}
 
       {/* Personal tags */}
       <Section title="התגיות שלי">

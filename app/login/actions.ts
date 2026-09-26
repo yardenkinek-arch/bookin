@@ -29,10 +29,12 @@ export async function signUp(
 ): Promise<AuthState> {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
+  const passwordConfirm = String(formData.get("password_confirm") ?? "");
   const displayName = String(formData.get("display_name") ?? "").trim();
 
   if (displayName.length < 2) return { error: "יש להזין שם לתצוגה." };
   if (password.length < 6) return { error: "הסיסמה חייבת להכיל לפחות 6 תווים." };
+  if (password !== passwordConfirm) return { error: "הסיסמאות אינן תואמות. נסי שוב." };
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signUp({

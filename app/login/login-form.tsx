@@ -62,6 +62,17 @@ export function LoginForm() {
           required
           dir="ltr"
         />
+        {mode === "up" && (
+          <Field
+            label="אימות סיסמה"
+            name="password_confirm"
+            type="password"
+            placeholder="הקלידי שוב את הסיסמה"
+            autoComplete="new-password"
+            required
+            dir="ltr"
+          />
+        )}
 
         {state?.error && (
           <p className="text-sm text-danger bg-primary-soft rounded-md px-3 py-2">
