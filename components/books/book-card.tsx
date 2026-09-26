@@ -33,6 +33,11 @@ export function BookCard({ book, isAdmin = false }: { book: BookListItem; isAdmi
             {READING_STATUS_ICON[book.myStatus]} {READING_STATUS_LABELS[book.myStatus]}
           </span>
         )}
+        {book.genre && (
+          <span className="absolute bottom-1.5 right-1.5 rounded-full bg-secondary/90 text-white text-[10px] font-medium px-2 py-0.5 backdrop-blur">
+            {book.genre}
+          </span>
+        )}
       </div>
       <div className="p-2.5 flex flex-col gap-0.5 flex-1">
         <h3 className="text-sm font-semibold text-ink leading-tight line-clamp-2">

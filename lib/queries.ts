@@ -8,6 +8,7 @@ import type {
 export interface BookListItem extends Book {
   authors: { id: string; name: string }[];
   series: Pick<Series, "id" | "name" | "total_books"> | null;
+  genre: string | null;
   myStatus: ReadingStatus | null;
   myRating: number | null;
   isFavorite: boolean;
@@ -25,12 +26,14 @@ const BOOK_SELECT = `
 const LIST_SELECT = `
   id, title, cover_url, series_id, series_position, published_year, created_at, verified_at,
   book_authors ( position, author:authors ( id, name ) ),
-  series:series ( id, name, total_books )
+  series:series ( id, name, total_books ),
+  book_genres ( genre:genres ( name ) )
 `;
 
 type RawBook = Book & {
   book_authors: { position: number; author: { id: string; name: string } }[];
   series: Pick<Series, "id" | "name" | "total_books"> | null;
+  book_genres?: { genre: { name: string } | null }[];
 };
 
 /** Attach the current user's personal status/rating/favorite to a set of books. */
@@ -74,6 +77,7 @@ async function decorateWithPersonal(
       .sort((a, z) => a.position - z.position)
       .map((ba) => ba.author),
     series: b.series,
+    genre: b.book_genres?.[0]?.genre?.name ?? null,
     myStatus: statusMap.get(b.id) ?? null,
     myRating: ratingMap.get(b.id) ?? null,
     isFavorite: favSet.has(b.id),
