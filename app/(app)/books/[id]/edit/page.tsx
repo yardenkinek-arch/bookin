@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import { getBookDetail } from "@/lib/queries";
+import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/ui/page-header";
 import { EditBookForm } from "./edit-book-form";
 import type { EditBookInput } from "./actions";
@@ -15,7 +16,13 @@ export default async function EditBookPage({
   const admin = await requireAdmin();
   const detail = await getBookDetail(id, admin.id);
   if (!detail) notFound();
-  const { book } = detail;
+  const { book, genres } = detail;
+
+  const supabase = await createClient();
+  const { data: allGenres } = await supabase
+    .from("genres")
+    .select("id, name")
+    .order("name");
 
   const initial: EditBookInput = {
     title: book.title,
@@ -31,6 +38,7 @@ export default async function EditBookPage({
     isbn_10: book.isbn_10 ?? "",
     description: book.description ?? "",
     cover_url: book.cover_url ?? "",
+    genre_id: genres[0]?.id ?? "",
   };
 
   return (
@@ -42,7 +50,7 @@ export default async function EditBookPage({
         ← חזרה לספר
       </Link>
       <PageHeader title="עריכת ספר" subtitle="עריכה ידנית של פרטי הספר (למנהלת בלבד)" />
-      <EditBookForm id={id} initial={initial} />
+      <EditBookForm id={id} initial={initial} genres={allGenres ?? []} />
     </div>
   );
 }

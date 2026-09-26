@@ -18,6 +18,7 @@ export interface EditBookInput {
   isbn_10?: string;
   description?: string;
   cover_url?: string;
+  genre_id?: string; // single genre; "" clears
 }
 
 async function upsertAuthor(
@@ -91,6 +92,14 @@ export async function updateBookDetails(
   for (let i = 0; i < names.length; i++) {
     const aid = await upsertAuthor(supabase, names[i]);
     if (aid) await supabase.from("book_authors").insert({ book_id: id, author_id: aid, position: i });
+  }
+
+  // Genre (single): replace the book's genres with the chosen one.
+  if (input.genre_id !== undefined) {
+    await supabase.from("book_genres").delete().eq("book_id", id);
+    if (input.genre_id) {
+      await supabase.from("book_genres").insert({ book_id: id, genre_id: input.genre_id });
+    }
   }
 
   await supabase.from("audit_logs").insert({

@@ -109,6 +109,11 @@ export async function getLibraryBooks(
     );
   }
   if (filters.seriesId) query = query.eq("series_id", filters.seriesId);
+  if (filters.genreId) {
+    const { data: bg } = await supabase
+      .from("book_genres").select("book_id").eq("genre_id", filters.genreId);
+    query = query.in("id", (bg ?? []).map((r) => r.book_id));
+  }
 
   switch (filters.sort) {
     case "year":

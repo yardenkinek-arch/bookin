@@ -9,7 +9,7 @@ import type { ReadingStatus } from "@/types/database";
 export default async function LibraryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string; sort?: string; verified?: string }>;
+  searchParams: Promise<{ q?: string; status?: string; sort?: string; verified?: string; genre?: string }>;
 }) {
   const profile = await requireProfile();
   const sp = await searchParams;
@@ -18,6 +18,7 @@ export default async function LibraryPage({
     search: sp.q,
     status: (sp.status as ReadingStatus) || undefined,
     verified: sp.verified === "yes" || sp.verified === "no" ? sp.verified : undefined,
+    genreId: sp.genre || undefined,
     sort: (sp.sort as LibraryFilters["sort"]) || "title",
   };
   const books = await getLibraryBooks(profile.id, filters);
@@ -40,6 +41,7 @@ export default async function LibraryPage({
       q: sp.q,
       status: sp.status,
       verified: sp.verified,
+      genre: sp.genre,
     };
     const merged = { ...current, ...extra };
     const params = new URLSearchParams();
