@@ -1,5 +1,6 @@
 import { requireProfile } from "@/lib/auth";
 import { getBookDetail } from "@/lib/queries";
+import { canViewRestricted } from "@/lib/restrictions";
 import { createClient } from "@/lib/supabase/server";
 import { Cover } from "@/components/books/cover";
 import {
@@ -22,7 +23,7 @@ export default async function BookPage({
 }) {
   const { id } = await params;
   const profile = await requireProfile();
-  const detail = await getBookDetail(id, profile.id);
+  const detail = await getBookDetail(id, profile.id, !canViewRestricted(profile));
   if (!detail) notFound();
 
   const { book, genres, myNote, myTags, familyStatuses, profiles } = detail;

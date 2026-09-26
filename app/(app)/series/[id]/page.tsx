@@ -1,5 +1,6 @@
 import { requireProfile } from "@/lib/auth";
 import { getSeriesBooks, getSeriesOverview } from "@/lib/queries";
+import { canViewRestricted } from "@/lib/restrictions";
 import { createClient } from "@/lib/supabase/server";
 import { BookCard } from "@/components/books/book-card";
 import { PageHeader } from "@/components/ui/page-header";
@@ -23,7 +24,7 @@ export default async function SeriesDetailPage({
   if (!series) notFound();
 
   const [books, overview] = await Promise.all([
-    getSeriesBooks(id, profile.id),
+    getSeriesBooks(id, profile.id, !canViewRestricted(profile)),
     getSeriesOverview(),
   ]);
   const info = overview.find((s) => s.id === id);

@@ -1,5 +1,6 @@
 import { requireProfile } from "@/lib/auth";
 import { getLibraryBooks } from "@/lib/queries";
+import { canViewRestricted } from "@/lib/restrictions";
 import { createClient } from "@/lib/supabase/server";
 import { BookCard } from "@/components/books/book-card";
 import { PageHeader } from "@/components/ui/page-header";
@@ -22,7 +23,7 @@ export default async function AuthorPage({
     .maybeSingle();
   if (!author) notFound();
 
-  const books = await getLibraryBooks(profile.id, { authorId: id });
+  const books = await getLibraryBooks(profile.id, { authorId: id }, !canViewRestricted(profile));
   const readCount = books.filter(
     (b) => b.myStatus === "read" || b.myStatus === "reread",
   ).length;

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { hasRestrictedGenre } from "@/lib/restrictions";
 import type {
   Book,
   ReadingStatus,
@@ -93,6 +94,7 @@ export interface LibraryFilters {
 export async function getLibraryBooks(
   userId: string,
   filters: LibraryFilters = {},
+  hideRestricted = false,
 ): Promise<BookListItem[]> {
   const supabase = await createClient();
   let query = supabase
@@ -144,11 +146,16 @@ export async function getLibraryBooks(
   }
   if (filters.verified === "yes") books = books.filter((b) => !!b.verified_at);
   if (filters.verified === "no") books = books.filter((b) => !b.verified_at);
+  if (hideRestricted) books = books.filter((b) => !hasRestrictedGenre(b.genres));
   return books;
 }
 
 /** A single book with everything needed for the detail page. */
-export async function getBookDetail(bookId: string, userId: string) {
+export async function getBookDetail(
+  bookId: string,
+  userId: string,
+  hideRestricted = false,
+) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("books")
@@ -193,6 +200,11 @@ export async function getBookDetail(bookId: string, userId: string) {
     ).book_genres
       ?.map((g) => g.genre)
       .filter((g): g is { id: string; name: string } => g != null) ?? [];
+
+  // Hide a restricted-genre book from users who may not view it.
+  if (hideRestricted && hasRestrictedGenre(genres.map((g) => g.name))) {
+    return null;
+  }
 
   return {
     book: decorated,
@@ -256,15 +268,21 @@ export async function getSeriesOverview(): Promise<SeriesOverview[]> {
 }
 
 /** Books belonging to a single series, ordered by position. */
-export async function getSeriesBooks(seriesId: string, userId: string) {
+export async function getSeriesBooks(
+  seriesId: string,
+  userId: string,
+  hideRestricted = false,
+) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("books")
-    .select(BOOK_SELECT)
+    .select(LIST_SELECT)
     .eq("series_id", seriesId)
     .is("deleted_at", null)
     .order("series_position", { ascending: true, nullsFirst: false });
-  return decorateWithPersonal((data ?? []) as unknown as RawBook[], userId);
+  let books = await decorateWithPersonal((data ?? []) as unknown as RawBook[], userId);
+  if (hideRestricted) books = books.filter((b) => !hasRestrictedGenre(b.genres));
+  return books;
 }
 
 /** Dashboard counters for admin. */

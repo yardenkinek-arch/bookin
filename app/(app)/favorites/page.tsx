@@ -1,11 +1,16 @@
 import { requireProfile } from "@/lib/auth";
 import { getLibraryBooks } from "@/lib/queries";
+import { canViewRestricted } from "@/lib/restrictions";
 import { BookCard } from "@/components/books/book-card";
 import { PageHeader, EmptyState } from "@/components/ui/page-header";
 
 export default async function FavoritesPage() {
   const profile = await requireProfile();
-  const books = await getLibraryBooks(profile.id, { favoritesOnly: true });
+  const books = await getLibraryBooks(
+    profile.id,
+    { favoritesOnly: true },
+    !canViewRestricted(profile),
+  );
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto">

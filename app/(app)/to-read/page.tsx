@@ -1,13 +1,15 @@
 import { requireProfile } from "@/lib/auth";
 import { getLibraryBooks } from "@/lib/queries";
+import { canViewRestricted } from "@/lib/restrictions";
 import { BookCard } from "@/components/books/book-card";
 import { PageHeader, EmptyState } from "@/components/ui/page-header";
 
 export default async function ToReadPage() {
   const profile = await requireProfile();
+  const hide = !canViewRestricted(profile);
   const [wantTo, reading] = await Promise.all([
-    getLibraryBooks(profile.id, { status: "want_to_read" }),
-    getLibraryBooks(profile.id, { status: "reading" }),
+    getLibraryBooks(profile.id, { status: "want_to_read" }, hide),
+    getLibraryBooks(profile.id, { status: "reading" }, hide),
   ]);
 
   return (

@@ -1,5 +1,6 @@
 import { requireProfile } from "@/lib/auth";
 import { getLibraryBooks } from "@/lib/queries";
+import { canViewRestricted } from "@/lib/restrictions";
 import { createClient } from "@/lib/supabase/server";
 import { BookCard } from "@/components/books/book-card";
 import { PageHeader, EmptyState } from "@/components/ui/page-header";
@@ -15,7 +16,9 @@ export default async function SearchPage({
 
   const supabase = await createClient();
   const [books, authorsRes, seriesRes] = await Promise.all([
-    q ? getLibraryBooks(profile.id, { search: q }) : Promise.resolve([]),
+    q
+      ? getLibraryBooks(profile.id, { search: q }, !canViewRestricted(profile))
+      : Promise.resolve([]),
     q
       ? supabase
           .from("authors")

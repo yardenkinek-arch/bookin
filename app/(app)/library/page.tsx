@@ -1,5 +1,6 @@
 import { requireProfile } from "@/lib/auth";
 import { getLibraryBooks, type LibraryFilters } from "@/lib/queries";
+import { canViewRestricted } from "@/lib/restrictions";
 import { BookCard } from "@/components/books/book-card";
 import { PageHeader, EmptyState } from "@/components/ui/page-header";
 import { READING_STATUS_LABELS, READING_STATUS_ORDER } from "@/lib/labels";
@@ -21,7 +22,7 @@ export default async function LibraryPage({
     genreId: sp.genre || undefined,
     sort: (sp.sort as LibraryFilters["sort"]) || "title",
   };
-  const books = await getLibraryBooks(profile.id, filters);
+  const books = await getLibraryBooks(profile.id, filters, !canViewRestricted(profile));
 
   const chip = (href: string, label: string, active: boolean) => (
     <Link
