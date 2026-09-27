@@ -3,13 +3,9 @@
 import { useEffect } from "react";
 
 /**
- * Remembers the library scroll position and restores it when the user comes
- * back (e.g. after opening a book). Uses sessionStorage so it's per-tab and
- * independent of navigation history — no fragile router.back() loops.
- *
- * Next resets scroll to the top on a new navigation, so we re-apply the saved
- * position over the next few frames until it sticks, and suppress saving while
- * that restore is in progress (so the reset-to-top doesn't overwrite it).
+ * Remembers the library scroll position and restores it when the user returns
+ * (e.g. after opening a book). sessionStorage-based, per filter URL, independent
+ * of navigation history.
  */
 const keyFor = () =>
   `library-scroll:${typeof window !== "undefined" ? window.location.search : ""}`;
@@ -24,39 +20,57 @@ export function LibraryScrollKeeper() {
       target = 0;
     }
 
+    // --- Restore: re-apply the saved position repeatedly for a while, so we win
+    // over Next's scroll-to-top and any late layout/content settling. ---
     let restoring = target > 2;
-    let frame = 0;
-    let saveRaf = 0;
-    let tries = 0;
+    const timers: number[] = [];
+    if (restoring) {
+      const apply = () => {
+        if (Math.abs(window.scrollY - target) > 2) window.scrollTo(0, target);
+      };
+      let raf = 0;
+      let frames = 0;
+      const rafLoop = () => {
+        apply();
+        if (++frames < 30) raf = requestAnimationFrame(rafLoop);
+      };
+      raf = requestAnimationFrame(rafLoop);
+      timers.push(raf as unknown as number);
+      // also catch resets that land after the rAF window
+      for (const ms of [80, 200, 400, 700, 1100]) {
+        timers.push(window.setTimeout(apply, ms));
+      }
+      // stop treating scroll events as "reset noise" once things settle
+      timers.push(window.setTimeout(() => (restoring = false), 1200));
+    }
 
-    const restore = () => {
-      window.scrollTo(0, target);
-      tries += 1;
-      if (tries < 10 && Math.abs(window.scrollY - target) > 2) {
-        frame = requestAnimationFrame(restore);
-      } else {
-        restoring = false;
+    // --- Save: write the current position on every scroll (throttled). ---
+    let last = 0;
+    const save = () => {
+      if (restoring) return;
+      const now = Date.now();
+      if (now - last < 80) return;
+      last = now;
+      try {
+        sessionStorage.setItem(keyFor(), String(window.scrollY));
+      } catch {
+        // ignore
       }
     };
-    if (restoring) frame = requestAnimationFrame(restore);
-
-    const onScroll = () => {
-      if (restoring) return; // don't record the reset-to-top while restoring
-      cancelAnimationFrame(saveRaf);
-      saveRaf = requestAnimationFrame(() => {
-        try {
-          sessionStorage.setItem(keyFor(), String(window.scrollY));
-        } catch {
-          // ignore
-        }
-      });
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("scroll", save, { passive: true });
 
     return () => {
-      window.removeEventListener("scroll", onScroll);
-      cancelAnimationFrame(frame);
-      cancelAnimationFrame(saveRaf);
+      // Capture the final position as the user leaves the library.
+      try {
+        sessionStorage.setItem(keyFor(), String(window.scrollY));
+      } catch {
+        // ignore
+      }
+      window.removeEventListener("scroll", save);
+      timers.forEach((t) => {
+        clearTimeout(t);
+        cancelAnimationFrame(t);
+      });
     };
   }, []);
 
