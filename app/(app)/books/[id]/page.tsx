@@ -12,7 +12,6 @@ import {
 } from "@/components/books/personal-controls";
 import { ReviewFlagButton } from "@/components/books/review-flag";
 import { AdminBookControls } from "@/components/books/admin-book-controls";
-import { BackLink } from "@/components/ui/back-link";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { ReadingStatus } from "@/types/database";
@@ -34,12 +33,12 @@ export default async function BookPage({
 
   return (
     <div className="p-4 md:p-6 max-w-3xl mx-auto">
-      <BackLink
-        fallbackHref="/library"
+      <Link
+        href="/library"
         className="text-sm text-ink-soft hover:text-ink inline-block mb-4"
       >
         ← חזרה לספרייה
-      </BackLink>
+      </Link>
 
       {/* Header */}
       <div className="flex gap-4 md:gap-6">

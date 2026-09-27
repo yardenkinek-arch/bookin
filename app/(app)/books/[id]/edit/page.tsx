@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { EditBookForm } from "./edit-book-form";
 import type { EditBookInput } from "./actions";
 import { notFound } from "next/navigation";
-import { BackLink } from "@/components/ui/back-link";
+import Link from "next/link";
 
 export default async function EditBookPage({
   params,
@@ -43,12 +43,12 @@ export default async function EditBookPage({
 
   return (
     <div className="p-4 md:p-6 max-w-2xl mx-auto">
-      <BackLink
-        fallbackHref={`/books/${id}`}
+      <Link
+        href={`/books/${id}`}
         className="text-sm text-ink-soft hover:text-ink inline-block mb-4"
       >
         ← חזרה לספר
-      </BackLink>
+      </Link>
       <PageHeader title="עריכת ספר" subtitle="עריכה ידנית של פרטי הספר (למנהלת בלבד)" />
       <EditBookForm id={id} initial={initial} genres={allGenres ?? []} />
     </div>

@@ -2,6 +2,7 @@ import { requireProfile } from "@/lib/auth";
 import { getLibraryBooks, type LibraryFilters } from "@/lib/queries";
 import { canViewRestricted } from "@/lib/restrictions";
 import { BookCard } from "@/components/books/book-card";
+import { LibraryScrollKeeper } from "@/components/books/library-scroll-keeper";
 import { PageHeader, EmptyState } from "@/components/ui/page-header";
 import { READING_STATUS_LABELS, READING_STATUS_ORDER } from "@/lib/labels";
 import Link from "next/link";
@@ -53,6 +54,7 @@ export default async function LibraryPage({
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto">
+      <LibraryScrollKeeper />
       <PageHeader
         title="הספרייה שלנו"
         subtitle={`${books.length} ספרים`}
