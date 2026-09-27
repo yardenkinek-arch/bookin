@@ -4,11 +4,19 @@ import { useEffect } from "react";
 
 /**
  * Remembers the library scroll position and restores it when the user returns
- * (e.g. after opening a book). sessionStorage-based, per filter URL, independent
- * of navigation history.
+ * (e.g. after opening a book).
+ *
+ * Only the USER's scrolling updates the saved position — Next resets scroll to
+ * the top on navigation (a programmatic scroll), and saving that would clobber
+ * the real position with 0. So we save only while a real input (wheel / touch /
+ * key / pointer) drives the scroll, and re-apply the saved position on return
+ * using setTimeout retries (rAF can be paused during a navigation, so it is not
+ * reliable here).
  */
 const keyFor = () =>
   `library-scroll:${typeof window !== "undefined" ? window.location.search : ""}`;
+
+const INPUT_EVENTS = ["wheel", "touchmove", "keydown", "pointerdown"] as const;
 
 export function LibraryScrollKeeper() {
   useEffect(() => {
@@ -20,62 +28,47 @@ export function LibraryScrollKeeper() {
       target = 0;
     }
 
-    let restoring = target > 2;
-    let raf = 0;
-
-    const stopRestoring = () => {
-      restoring = false;
-      cancelAnimationFrame(raf);
+    let userTouched = false;
+    const markUser = () => {
+      userTouched = true;
     };
-
-    // Re-apply the saved position (countering Next's programmatic scroll-to-top)
-    // until it lands — but bail out the moment the user actually scrolls, so we
-    // never fight their next scroll.
-    if (restoring) {
-      const start =
-        typeof performance !== "undefined" ? performance.now() : Date.now();
-      const loop = () => {
-        if (!restoring) return;
-        if (window.scrollY !== target) window.scrollTo(0, target);
-        const now =
-          typeof performance !== "undefined" ? performance.now() : Date.now();
-        // keep correcting briefly (late resets), then let go
-        if (now - start < 600) raf = requestAnimationFrame(loop);
-        else restoring = false;
-      };
-      raf = requestAnimationFrame(loop);
-    }
-
-    // Any real user input hands control back immediately.
-    const userEvents = ["wheel", "touchmove", "keydown", "pointerdown"] as const;
-    userEvents.forEach((e) =>
-      window.addEventListener(e, stopRestoring, { passive: true }),
+    INPUT_EVENTS.forEach((e) =>
+      window.addEventListener(e, markUser, { passive: true }),
     );
 
-    // Save the current position on every scroll (throttled), unless we're mid-restore.
-    let last = 0;
-    const save = () => {
-      if (restoring) return;
+    // Save only real user scrolling; ignore programmatic scroll.
+    let lastSave = 0;
+    const onScroll = () => {
+      if (!userTouched) return;
       const now = Date.now();
-      if (now - last < 60) return;
-      last = now;
+      if (now - lastSave < 60) return;
+      lastSave = now;
       try {
         sessionStorage.setItem(keyFor(), String(window.scrollY));
       } catch {
         // ignore
       }
     };
-    window.addEventListener("scroll", save, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    // Restore: re-apply the saved position a few times until it sticks, bailing
+    // out the moment the user scrolls.
+    const timers: number[] = [];
+    if (target > 2) {
+      const apply = () => {
+        if (userTouched) return;
+        if (window.scrollY !== target) window.scrollTo(0, target);
+      };
+      apply();
+      for (const ms of [0, 40, 90, 160, 260, 400, 600, 850]) {
+        timers.push(window.setTimeout(apply, ms));
+      }
+    }
 
     return () => {
-      try {
-        sessionStorage.setItem(keyFor(), String(window.scrollY));
-      } catch {
-        // ignore
-      }
-      cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", save);
-      userEvents.forEach((e) => window.removeEventListener(e, stopRestoring));
+      INPUT_EVENTS.forEach((e) => window.removeEventListener(e, markUser));
+      window.removeEventListener("scroll", onScroll);
+      timers.forEach((t) => clearTimeout(t));
     };
   }, []);
 
