@@ -20,36 +20,44 @@ export function LibraryScrollKeeper() {
       target = 0;
     }
 
-    // --- Restore: re-apply the saved position repeatedly for a while, so we win
-    // over Next's scroll-to-top and any late layout/content settling. ---
     let restoring = target > 2;
-    const timers: number[] = [];
+    let raf = 0;
+
+    const stopRestoring = () => {
+      restoring = false;
+      cancelAnimationFrame(raf);
+    };
+
+    // Re-apply the saved position (countering Next's programmatic scroll-to-top)
+    // until it lands — but bail out the moment the user actually scrolls, so we
+    // never fight their next scroll.
     if (restoring) {
-      const apply = () => {
-        if (Math.abs(window.scrollY - target) > 2) window.scrollTo(0, target);
+      const start =
+        typeof performance !== "undefined" ? performance.now() : Date.now();
+      const loop = () => {
+        if (!restoring) return;
+        if (window.scrollY !== target) window.scrollTo(0, target);
+        const now =
+          typeof performance !== "undefined" ? performance.now() : Date.now();
+        // keep correcting briefly (late resets), then let go
+        if (now - start < 600) raf = requestAnimationFrame(loop);
+        else restoring = false;
       };
-      let raf = 0;
-      let frames = 0;
-      const rafLoop = () => {
-        apply();
-        if (++frames < 30) raf = requestAnimationFrame(rafLoop);
-      };
-      raf = requestAnimationFrame(rafLoop);
-      timers.push(raf as unknown as number);
-      // also catch resets that land after the rAF window
-      for (const ms of [80, 200, 400, 700, 1100]) {
-        timers.push(window.setTimeout(apply, ms));
-      }
-      // stop treating scroll events as "reset noise" once things settle
-      timers.push(window.setTimeout(() => (restoring = false), 1200));
+      raf = requestAnimationFrame(loop);
     }
 
-    // --- Save: write the current position on every scroll (throttled). ---
+    // Any real user input hands control back immediately.
+    const userEvents = ["wheel", "touchmove", "keydown", "pointerdown"] as const;
+    userEvents.forEach((e) =>
+      window.addEventListener(e, stopRestoring, { passive: true }),
+    );
+
+    // Save the current position on every scroll (throttled), unless we're mid-restore.
     let last = 0;
     const save = () => {
       if (restoring) return;
       const now = Date.now();
-      if (now - last < 80) return;
+      if (now - last < 60) return;
       last = now;
       try {
         sessionStorage.setItem(keyFor(), String(window.scrollY));
@@ -60,17 +68,14 @@ export function LibraryScrollKeeper() {
     window.addEventListener("scroll", save, { passive: true });
 
     return () => {
-      // Capture the final position as the user leaves the library.
       try {
         sessionStorage.setItem(keyFor(), String(window.scrollY));
       } catch {
         // ignore
       }
+      cancelAnimationFrame(raf);
       window.removeEventListener("scroll", save);
-      timers.forEach((t) => {
-        clearTimeout(t);
-        cancelAnimationFrame(t);
-      });
+      userEvents.forEach((e) => window.removeEventListener(e, stopRestoring));
     };
   }, []);
 
