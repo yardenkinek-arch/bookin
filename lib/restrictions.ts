@@ -12,6 +12,7 @@ export const RESTRICTED_GENRES = new Set<string>([
   "מותחן ריגול",
   "מסתורין",
   "רומנטיקה",
+  'ספרות להט"ב',
 ]);
 
 /** Display names (besides the admin) allowed to see restricted books. */
