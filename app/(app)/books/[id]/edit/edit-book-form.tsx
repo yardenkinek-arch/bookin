@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updateBookDetails, uploadBookCover, type EditBookInput } from "./actions";
+import { setBookVerified } from "@/app/(app)/books/actions";
 import { Cover } from "@/components/books/cover";
 
 function processFile(file: File): Promise<string> {
@@ -38,10 +39,12 @@ export function EditBookForm({
   id,
   initial,
   genres,
+  alreadyVerified,
 }: {
   id: string;
   initial: EditBookInput;
   genres: { id: string; name: string }[];
+  alreadyVerified: boolean;
 }) {
   const router = useRouter();
   const [form, setForm] = useState<EditBookInput>(initial);
@@ -49,6 +52,8 @@ export function EditBookForm({
   const [savedCover, setSavedCover] = useState(false);
   const [uploading, startUpload] = useTransition();
   const [saving, startSave] = useTransition();
+  const [askVerify, setAskVerify] = useState(false);
+  const [finishing, startFinish] = useTransition();
 
   const set = (k: keyof EditBookInput) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -82,8 +87,20 @@ export function EditBookForm({
     }
     startSave(async () => {
       const res = await updateBookDetails(id, form);
-      if (res.error) setError(res.error);
-      else router.push(`/books/${id}`);
+      if (res.error) {
+        setError(res.error);
+        return;
+      }
+      // Offer to mark verified — unless it's already verified.
+      if (alreadyVerified) router.push(`/books/${id}`);
+      else setAskVerify(true);
+    });
+  };
+
+  const finish = (markVerified: boolean) => {
+    startFinish(async () => {
+      if (markVerified) await setBookVerified(id, true);
+      router.push(`/books/${id}`);
     });
   };
 
@@ -192,6 +209,35 @@ export function EditBookForm({
           ביטול
         </button>
       </div>
+
+      {/* After-save: offer to mark the book verified */}
+      {askVerify && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="card w-full max-w-sm p-5 text-center">
+            <div className="text-3xl mb-2">✓</div>
+            <p className="text-ink font-semibold mb-1">השינויים נשמרו</p>
+            <p className="text-ink-soft text-sm mb-4">
+              לסמן את הספר כ״עברתי ואימתתי״?
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => finish(true)}
+                disabled={finishing}
+                className="flex-1 rounded-xl bg-primary hover:bg-primary-600 text-white font-semibold py-2.5 transition disabled:opacity-60"
+              >
+                {finishing ? "רגע…" : "כן, סמני כמאומת"}
+              </button>
+              <button
+                onClick={() => finish(false)}
+                disabled={finishing}
+                className="flex-1 rounded-xl border border-line bg-surface font-semibold text-ink-soft hover:text-ink py-2.5 transition disabled:opacity-60"
+              >
+                לא, רק לשמור
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

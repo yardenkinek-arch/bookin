@@ -50,7 +50,12 @@ export default async function EditBookPage({
         ← חזרה לספר
       </Link>
       <PageHeader title="עריכת ספר" subtitle="עריכה ידנית של פרטי הספר (למנהלת בלבד)" />
-      <EditBookForm id={id} initial={initial} genres={allGenres ?? []} />
+      <EditBookForm
+        id={id}
+        initial={initial}
+        genres={allGenres ?? []}
+        alreadyVerified={!!book.verified_at}
+      />
     </div>
   );
 }
