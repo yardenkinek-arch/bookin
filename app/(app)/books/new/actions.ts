@@ -44,6 +44,7 @@ export interface CreateBookInput {
   series_name?: string;
   series_position?: string;
   source?: string;
+  genre_ids?: string[];
 }
 
 /** find-or-create an author by name; returns id */
@@ -134,6 +135,14 @@ export async function createBook(input: CreateBookInput) {
         .from("book_authors")
         .insert({ book_id: book.id, author_id: authorId, position: i });
     }
+  }
+
+  // genres
+  const genreIds = [...new Set((input.genre_ids ?? []).filter(Boolean))];
+  if (genreIds.length) {
+    await supabase
+      .from("book_genres")
+      .insert(genreIds.map((gid) => ({ book_id: book.id, genre_id: gid })));
   }
 
   await supabase.from("audit_logs").insert({

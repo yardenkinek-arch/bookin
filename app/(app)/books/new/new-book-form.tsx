@@ -6,7 +6,11 @@ import { Cover } from "@/components/books/cover";
 
 const EMPTY: CreateBookInput = { title: "" };
 
-export function NewBookForm() {
+export function NewBookForm({
+  genres,
+}: {
+  genres: { id: string; name: string }[];
+}) {
   const [isbn, setIsbn] = useState("");
   const [form, setForm] = useState<CreateBookInput>(EMPTY);
   const [dup, setDup] = useState<{ id: string; title: string } | null>(null);
@@ -130,6 +134,41 @@ export function NewBookForm() {
         <Text label="ISBN-10" value={form.isbn_10 ?? ""} onChange={set("isbn_10")} dir="ltr" />
         <Text label="שם הסדרה" value={form.series_name ?? ""} onChange={set("series_name")} />
         <Text label="מספר בסדרה" value={form.series_position ?? ""} onChange={set("series_position")} />
+      </div>
+
+      <div>
+        <span className="block text-sm font-medium text-ink-soft mb-2">
+          ז'אנרים <span className="text-ink-soft/70">(אפשר לבחור כמה)</span>
+        </span>
+        <div className="flex flex-wrap gap-2">
+          {genres.map((g) => {
+            const selected = (form.genre_ids ?? []).includes(g.id);
+            return (
+              <button
+                key={g.id}
+                type="button"
+                onClick={() =>
+                  setForm((f) => {
+                    const cur = f.genre_ids ?? [];
+                    return {
+                      ...f,
+                      genre_ids: selected
+                        ? cur.filter((x) => x !== g.id)
+                        : [...cur, g.id],
+                    };
+                  })
+                }
+                className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
+                  selected
+                    ? "bg-primary text-white"
+                    : "bg-surface border border-line text-ink-soft hover:text-ink"
+                }`}
+              >
+                {g.name}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <label className="block">
